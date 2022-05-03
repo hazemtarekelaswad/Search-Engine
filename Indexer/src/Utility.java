@@ -31,6 +31,19 @@ public class Utility {
         return lines;
     }
 
+    public static String stemWord(String word) throws IOException {
+        Analyzer analyzer = new EnglishAnalyzer();
+        TokenStream stream = analyzer.tokenStream("field", word);
+        stream.reset();
+        String lemma = "";
+        while (stream.incrementToken()) {
+            lemma = stream.getAttribute(CharTermAttribute.class).toString();
+        }
+        stream.end();
+        stream.close();
+        return lemma;
+    }
+
     public static void main(String[] args) throws IOException {
 
 

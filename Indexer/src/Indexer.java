@@ -16,10 +16,11 @@ public class Indexer {
 
 
         Vector<PageInfo> pgs = new Vector<PageInfo>();
-        HashSet<String> s = new HashSet<>();
+//        HashSet<String> s = new HashSet<>();
         for (PageInfo page : pages) {
             for (WordInfo word : page.getWords()) {
-//                insertIntoDB(word, page)
+                //Todo: Don't forget to take IDF into consideration
+                //Todo: insertIntoDB(word, page)
             }
         }
 
@@ -33,8 +34,15 @@ public class Indexer {
 //        }
     }
 
+    // Todo:
     private static void insertIntoDB(WordInfo word, PageInfo page) {
 
+    }
+
+    // Todo:
+    // Incremental Update: It must be possible to update an existing
+    // index with a set of newly crawled HTML documents
+    public static void updateDB(PageInfo page) {
     }
 
 

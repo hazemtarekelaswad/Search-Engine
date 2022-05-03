@@ -40,26 +40,13 @@ public class PageInfo {
                 continue;
             Elements elements = doc.select("*:matchesOwn(\\b" + word + "\\b)");
             for (Element element : elements) {
-                String stemmedWord = stemWord(word);
+                String stemmedWord = Utility.stemWord(word);
                 System.out.println(stemmedWord);
                 WordInfo wordInfo = new WordInfo(stemmedWord, element.tagName(), element.text(), this);
                 this.words.add(wordInfo);
             }
         }
 
-    }
-
-    String stemWord(String word) throws IOException {
-        Analyzer analyzer = new EnglishAnalyzer();
-        TokenStream stream = analyzer.tokenStream("field", word);
-        stream.reset();
-        String lemma = "";
-        while (stream.incrementToken()) {
-            lemma = stream.getAttribute(CharTermAttribute.class).toString();
-        }
-        stream.end();
-        stream.close();
-        return lemma;
     }
 
     public String getUrl() {
@@ -87,7 +74,7 @@ public class PageInfo {
     }
 
     // Utility method
-    public long getTermFreq(String word) {
+    private long getTermFreq(String word) {
         long tf = 0;
         for (WordInfo w : words) {
             if (word.equals(w.getName())) ++tf;
