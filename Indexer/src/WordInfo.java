@@ -1,16 +1,31 @@
+import java.util.HashSet;
+import java.util.Vector;
+
 public class WordInfo {
 
     private String name;
-    private String tag;
-    private String sentence;
+    private HashSet<String> tags;
+    private HashSet<String> sentences;
     private PageInfo page;
+    private long termFreq;
 
     public WordInfo(String word, String tag, String sentence, PageInfo page) {
+        this.tags = new HashSet<>();
+        this.sentences = new HashSet<>();
+
         this.name = word;
-        this.tag = tag;
-        this.sentence = sentence;
+        this.tags.add(tag);
+        this.sentences.add(sentence);
         this.page = page;
+
+        this.termFreq = 1;
     }
+
+    public long getTermFreq() { return termFreq; }
+
+    public void increaseTermFreq() { ++termFreq; }
+
+
 
     public String getName() {
         return name;
@@ -20,12 +35,12 @@ public class WordInfo {
         this.name = name;
     }
 
-    public String getTag() {
-        return tag;
+    public HashSet<String> getTags() {
+        return tags;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void addTag(String tag) {
+        this.tags.add(tag);
     }
 
     public PageInfo getPage() {
@@ -36,11 +51,11 @@ public class WordInfo {
         this.page = page;
     }
 
-    public String getSentence() {
-        return sentence;
+    public HashSet<String> getSentences() {
+        return sentences;
     }
 
-    public void setSentence(String sentence) {
-        this.sentence = sentence;
+    public void addSentence(String sentence) {
+        this.sentences.add(sentence);
     }
 }

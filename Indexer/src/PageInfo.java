@@ -16,6 +16,8 @@ public class PageInfo {
     private String title;
     private Vector<WordInfo> words;
 
+    private long rawWordsCount;
+
 
     public PageInfo(String url) throws IOException {
         this.url = url;
@@ -28,7 +30,10 @@ public class PageInfo {
         this.title = doc.title();
         String body = doc.body().text();
         HashSet<String> refinedWords = new HashSet<>();
-        String[] words = body.split("[ \t]");
+        String[] words = body.split("[ \t\n]");
+
+        this.rawWordsCount = words.length;
+
         for (String word : words) {
             if (!stopWords.contains(word.toLowerCase())) {
                 refinedWords.add(word.toLowerCase());
@@ -41,9 +46,26 @@ public class PageInfo {
             Elements elements = doc.select("*:matchesOwn(\\b" + word + "\\b)");
             for (Element element : elements) {
                 String stemmedWord = Utility.stemWord(word);
-                System.out.println(stemmedWord);
-                WordInfo wordInfo = new WordInfo(stemmedWord, element.tagName(), element.text(), this);
-                this.words.add(wordInfo);
+//                System.out.println(stemmedWord);
+
+                boolean isFound = false;
+                WordInfo tempWord = null;
+                for (WordInfo w : this.words) {
+                    if (w.getName().equals(stemmedWord)) {
+                        isFound = true;
+                        tempWord = w;
+                        break;
+                    }
+                }
+                if (isFound) {
+                    tempWord.increaseTermFreq();
+
+                    tempWord.addTag(element.tagName());
+                    tempWord.addSentence(element.text());
+                } else {
+                    WordInfo wordInfo = new WordInfo(stemmedWord, element.tagName(), element.text(), this);
+                    this.words.add(wordInfo);
+                }
             }
         }
 
@@ -75,36 +97,40 @@ public class PageInfo {
 
     // Utility method
     private long getTermFreq(String word) {
-        long tf = 0;
         for (WordInfo w : words) {
-            if (word.equals(w.getName())) ++tf;
+            if (word.equals(w.getName())) return w.getTermFreq();
         }
-        return tf;
+        return -1;  // NOT FOUND
     }
 
     public double getNormTermFreq(String word) {
-        return (double) getTermFreq(word) / words.size();
+        long tf = getTermFreq(word);
+        if (tf == -1) {
+            System.err.println("The passed word is not found in this page");
+            return -1;
+        }
+        return (double) tf / this.rawWordsCount;
     }
 
-    public HashSet<String> getTagsOf(String word) {
-        HashSet<String> tags = new HashSet<>();
-        for (WordInfo w : words) {
-            if (word.equals(w.getName())) {
-                tags.add(w.getTag());
-            }
-        }
-        return tags;
-    }
+//    public HashSet<String> getTagsOf(String word) {
+//        HashSet<String> tags = new HashSet<>();
+//        for (WordInfo w : words) {
+//            if (word.equals(w.getName())) {
+//                tags.add(w.getTag());
+//            }
+//        }
+//        return tags;
+//    }
 
-    public HashSet<String> getSentencesOf(String word) {
-        HashSet<String> sentences = new HashSet<>();
-        for (WordInfo w : words) {
-            if (word.equals(w.getName())) {
-                sentences.add(w.getSentence());
-            }
-        }
-        return sentences;
-    }
+//    public HashSet<String> getSentencesOf(String word) {
+//        HashSet<String> sentences = new HashSet<>();
+//        for (WordInfo w : words) {
+//            if (word.equals(w.getName())) {
+//                sentences.add(w.getSentence());
+//            }
+//        }
+//        return sentences;
+//    }
 
 
 }
