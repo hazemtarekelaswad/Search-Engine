@@ -1,5 +1,7 @@
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -17,6 +19,8 @@ public class Indexer {
     private static long pagesCount = 0;
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
+
 
         MongoCollection collection = Utility.dbConnect();
 
@@ -53,6 +57,10 @@ public class Indexer {
         }
 
         Utility.dbDisconnect();
+
+        // listen for any coming crawled url in order ot index it in the db
+//        processNewPage("https://en.wikipedia.org/wiki/Ice_hockey_in_Bosnia_and_Herzegovina");
+
     }
 
     private static Document createPageDoc(WordInfo word, PageInfo page) {
@@ -89,19 +97,47 @@ public class Indexer {
 
     // Incremental Update: It must be possible to update an existing
     // index with a set of newly crawled HTML documents
-
-    public static void detectChanges(String url) throws IOException {
+    // TODO;
+    public static void processNewPage(String url) throws IOException {
         MongoCollection collection = Utility.dbConnect();
 
+        // TODO: you should update every word's idf in the db because pagesCount has changed due to new crawled pages
+//        if (/* newPageCrawled */) {
         PageInfo newPage = new PageInfo(url);
-        ++pagesCount;
-        // TODO: you should update every word's idf in the db because pagesCount has changed
 
         for (WordInfo word : newPage.getWords()) {
             System.out.println(word.getName());
             dbInsert(collection, word, newPage);
         }
         System.err.println("Number of words: " + newPage.getWords().size());
+
+        // Update every word's IDF
+        ++pagesCount;
+        MongoCursor<Document> docCursor = collection.find().cursor();
+
+        try {
+            while (docCursor.hasNext()) {
+                Document wordDoc = docCursor.next();
+                long docFreq = (long) wordDoc.get("df");
+                Bson update = Updates.set("idf", log10((double) pagesCount / docFreq));
+                collection.updateOne(wordDoc, update);
+            }
+        } finally {
+            docCursor.close();
+        }
+
+
+
+        // TODO: or update nothing in case of existing crawled page changes
+//        } else if ( /* anExistingCrawledPageChanges */ ) {
+//            PageInfo newPage = new PageInfo(url);
+//
+//            for (WordInfo word : newPage.getWords()) {
+//                System.out.println(word.getName());
+//                dbInsert(collection, word, newPage);
+//            }
+//            System.err.println("Number of words: " + newPage.getWords().size());
+//        }
 
         Utility.dbDisconnect();
 
