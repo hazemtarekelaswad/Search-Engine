@@ -28,12 +28,18 @@ public class PageInfo {
     public PageInfo(String url) throws IOException {
         this.url = url;
         this.words = new Vector<WordInfo>();
+        this.links = new Vector<String>();
 
         Vector<String> stopWords = Utility.readFile(Utility.STOP_WORDS_FILE_PATH);
 
         Document doc = Jsoup.connect(url).get();
 
         /// TODO: get all links and fill links vector with
+
+        Elements linkElements = doc.select("a[href]");  // HTML links only or not with http or not
+        for (Element element : linkElements) {
+            this.links.add(element.attr("href"));
+        }
 
         this.title = doc.title();
         String body = doc.body().text();
