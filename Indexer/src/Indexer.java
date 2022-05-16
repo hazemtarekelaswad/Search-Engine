@@ -20,9 +20,7 @@ public class Indexer {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-
-
-        MongoCollection collection = Utility.dbConnect();
+        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 
         collection.drop();
 
@@ -47,6 +45,9 @@ public class Indexer {
         }
         for (Thread thread : threads) thread.join();
 
+        // TODO: @ lucio
+        // TODO: Send these pages to another class in constructor
+//        Ranker ranker = new Ranker(pages);
 
         for (PageInfo page : pages) {
             for (WordInfo word : page.getWords()) {
@@ -68,7 +69,9 @@ public class Indexer {
                 .append("url", page.getUrl())
                 .append("title", page.getTitle())
                 .append("termFreq", page.getNormTermFreq(word.getName()))
+                .append("advTermFreq", page.getNormAdvTermFreq(word.getName()))
                 .append("tags", word.getTags())
+                .append("weights", word.getWeights())
                 .append("sentences", word.getSentences());
     }
 
@@ -99,7 +102,7 @@ public class Indexer {
     // index with a set of newly crawled HTML documents
     // TODO;
     public static void processNewPage(String url) throws IOException {
-        MongoCollection collection = Utility.dbConnect();
+        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 
         // TODO: you should update every word's idf in the db because pagesCount has changed due to new crawled pages
 //        if (/* newPageCrawled */) {
