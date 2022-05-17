@@ -5,6 +5,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
+import jdk.jshell.execution.Util;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -69,6 +70,8 @@ public class Indexer {
         insertScores(collection);
 
         Utility.dbDisconnect();
+
+//        calcRank(calcRelevance());
 
         // listen for any coming crawled url in order ot index it in the db
 //        processNewPage("https://en.wikipedia.org/wiki/Ice_hockey_in_Bosnia_and_Herzegovina");
@@ -146,37 +149,55 @@ public class Indexer {
                 collection.updateOne(filter, adding);
             }
         }
+    }
 
-
-//        MongoCursor<Document> wordCursor = collection.find().cursor();
+//    private static HashMap<String, Double> calcRelevance() {
 //
-//        try {
-//            while (wordCursor.hasNext()) {
-//                Document wordDoc = wordCursor.next();
-//                double inverseDocFreq = (double) wordDoc.get("idf");
+//        Vector<String> words = new Vector<>();
+//        words.add("histori");
+//        words.add("theme");
 //
-//                List<Document> pages = (List<Document>) collection.find().projection(fields(include("pages"))).map(document -> document.get("nodes")).first();
-//                System.out.println(pages.next().get("url"));
-
-//                MongoCollection<Document> pageCursor = collection.find(eq("pages.1.")).cursor();
-////                double termFreq = (double) pageDoc.get("termFreq");
-//                double advTermFreq = (double) pageCursor.next().("advTermFreq");
-//                double score = advTermFreq * inverseDocFreq;
-//                Bson update = Updates.set("score", score);
-//                collection.updateOne(wordDoc.get("pages"), update);
+//        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 //
-//                List<Document> pages = (List<Document>) wordDoc.get("pages");
-//                for (Document pageDoc : pages) {
-//
-//
-//
+//        HashMap<String, Double> pagesRelevance = new HashMap<>();
+//        for (String word : words) {
+//            Document doc = (Document) collection.find(eq("word", word)).first();
+//            ArrayList<Document> pages = (ArrayList<Document>) doc.get("pages");
+//            for (Document pg : pages) {
+//                String url = pg.getString("url");
+//                double score = pg.getDouble("score");
+//                if (pagesRelevance.containsKey(url)) {
+//                    pagesRelevance.replace(url, pagesRelevance.get(url) + score);
+//                } else {
+//                    pagesRelevance.put(url, score);
 //                }
 //            }
-//        } finally {
-//            wordCursor.close();
 //        }
+//        // Now, every url has an associated relevance value
+//
+//        Utility.dbDisconnect();
+//
+//        for (Map.Entry<String, Double> entry : pagesRelevance.entrySet()) {
+//            System.out.println(entry.getKey() + "\t" + entry.getValue());
+//        }
+//        return pagesRelevance;
+//
+//
+//    }
 
-    }
+//    private static void calcRank(HashMap<String, Double> pagesRelevance) {
+//
+//        // TODO: sort these pages and send a particular number of pages to the Frontend
+//        TreeMap<String, Double> treeMap = new TreeMap<>(Comparator.comparingDouble(pagesRelevance::get).reversed());
+//        treeMap.putAll(pagesRelevance);
+//
+//        for (Map.Entry<String, Double> entry : treeMap.entrySet()) {
+//            System.out.println(entry.getKey() + "\t" + entry.getValue());
+//        }
+//
+//
+//    }
+
 
     // Incremental Update: It must be possible to update an existing
     // index with a set of newly crawled HTML documents
