@@ -7,7 +7,8 @@ import java.util.*;
 import static com.mongodb.client.model.Filters.eq;
 
 public class Ranker {
-    static int MAXITERATION = 1;
+    static int MAXITERATION = 100;
+    private static double DAMPING_FACTOR = 0.85;
 
     private Vector<PageInfo> pages;
     private long numberOfPages;
@@ -31,13 +32,12 @@ public class Ranker {
 
                     score += (this.pages.get(j).getPreviousPopularityScore() / this.pages.get(j).getLinks().size());
 
-
                     System.err.println("Matched link | score: " + score);
                 } else {
                     System.err.println("NOT Matched link | score: " + score);
                 }
             }
-            this.pages.get(i).setCurrentPopularityScore(score);
+            this.pages.get(i).setCurrentPopularityScore((1.0 - DAMPING_FACTOR) / this.numberOfPages + DAMPING_FACTOR * score);
         }
 
 

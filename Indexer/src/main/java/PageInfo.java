@@ -71,7 +71,7 @@ public class PageInfo {
         }
 
         for (String word : refinedWords) {
-            if (word.isEmpty() || word.contains("'") || word.contains("\"") || word.contains("\\") || word.contains("(") || word.contains(")") || word.contains("[") || word.contains("]") || word.contains("{") || word.contains("}")) {
+            if (word.isEmpty() || word.contains("'") || word.contains("\"") || word.contains("\\") || word.contains("(") || word.contains(")") || word.contains("[") || word.contains("]") || word.contains("{") || word.contains("}") || word.contains("*")) {
                 continue;
             }
             Elements elements = doc.select("*:matchesOwn(\\b" + word + "\\b)");
