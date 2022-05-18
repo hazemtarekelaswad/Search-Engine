@@ -14,7 +14,9 @@ public class Server {
         HashMap<String, PageJson> pagesRelevance = Ranker.calcRelevance(words);
         List<Map.Entry<String, PageJson>> resultPages = Ranker.calcRank(pagesRelevance);
 
-        System.out.println(resultPages);
+        for (Map.Entry<String, PageJson> entry : resultPages) {
+            System.out.println(entry.getKey() + "\t" + entry.getValue().score);
+        }
 
         // Prepare the json file to send
         org.json.JSONObject json = new org.json.JSONObject();
@@ -49,7 +51,13 @@ public class Server {
             org.json.JSONObject response = processSearchQueries(words);
 
             res.type("application/json");
-            res.status(200);
+
+            if ((int) response.get("results") == 0) {
+                res.status(400);
+            } else {
+                res.status(200);
+            }
+
             return response;
 
         });

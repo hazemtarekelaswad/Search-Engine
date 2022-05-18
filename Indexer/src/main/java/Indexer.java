@@ -50,9 +50,7 @@ public class Indexer {
         }
         for (Thread thread : threads) thread.join();
 
-        // TODO: @ lucio
-        // TODO: Send these pages to another class in constructor
-        Ranker ranker = new Ranker(pages, pagesCount);
+        new Ranker(pages, pagesCount);
 
 
         MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
@@ -150,53 +148,6 @@ public class Indexer {
             }
         }
     }
-
-//    private static HashMap<String, Double> calcRelevance() {
-//
-//        Vector<String> words = new Vector<>();
-//        words.add("histori");
-//        words.add("theme");
-//
-//        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
-//
-//        HashMap<String, Double> pagesRelevance = new HashMap<>();
-//        for (String word : words) {
-//            Document doc = (Document) collection.find(eq("word", word)).first();
-//            ArrayList<Document> pages = (ArrayList<Document>) doc.get("pages");
-//            for (Document pg : pages) {
-//                String url = pg.getString("url");
-//                double score = pg.getDouble("score");
-//                if (pagesRelevance.containsKey(url)) {
-//                    pagesRelevance.replace(url, pagesRelevance.get(url) + score);
-//                } else {
-//                    pagesRelevance.put(url, score);
-//                }
-//            }
-//        }
-//        // Now, every url has an associated relevance value
-//
-//        Utility.dbDisconnect();
-//
-//        for (Map.Entry<String, Double> entry : pagesRelevance.entrySet()) {
-//            System.out.println(entry.getKey() + "\t" + entry.getValue());
-//        }
-//        return pagesRelevance;
-//
-//
-//    }
-
-//    private static void calcRank(HashMap<String, Double> pagesRelevance) {
-//
-//        // TODO: sort these pages and send a particular number of pages to the Frontend
-//        TreeMap<String, Double> treeMap = new TreeMap<>(Comparator.comparingDouble(pagesRelevance::get).reversed());
-//        treeMap.putAll(pagesRelevance);
-//
-//        for (Map.Entry<String, Double> entry : treeMap.entrySet()) {
-//            System.out.println(entry.getKey() + "\t" + entry.getValue());
-//        }
-//
-//
-//    }
 
 
     // Incremental Update: It must be possible to update an existing

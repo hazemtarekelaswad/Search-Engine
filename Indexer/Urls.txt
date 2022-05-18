@@ -1,2 +1,14 @@
-https://en.wikipedia.org/wiki/Standards_organization
-https://en.wikipedia.org/wiki/Sphygmomanometer
+https://practice.geeksforgeeks.org/courses/geeks-classes-live
+https://www.geeksforgeeks.org/analysis-of-algorithms-set-1-asymptotic-analysis
+https://www.geeksforgeeks.org/fundamentals-of-algorithms
+https://lmo.wikipedia.org
+https://rpg.stackexchange.com/questions/tagged/player-communication
+https://law.stackexchange.com/questions/tagged/interrogation
+https://travel.stackexchange.com/questions/tagged/spain
+https://worldbuilding.stackexchange.com/questions/230121/clothing-against-the-wind
+https://worldbuilding.stackexchange.com/questions/tagged/climate
+https://worldbuilding.stackexchange.com/questions/tagged/weather
+https://tt.wikipedia.org/wiki/?????_??????????
+https://sm.wikipedia.org/wiki/Fa'asaina
+https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognitionResultList
+https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis
