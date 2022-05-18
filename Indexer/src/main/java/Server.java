@@ -11,8 +11,8 @@ public class Server {
     private static final int PORT_NUMBER = 3000;
 
     private static org.json.JSONObject processSearchQueries(Vector<String> words) {
-        HashMap<String, Double> pagesRelevance = Ranker.calcRelevance(words);
-        List<Map.Entry<String, Double>> resultPages = Ranker.calcRank(pagesRelevance);
+        HashMap<String, PageJson> pagesRelevance = Ranker.calcRelevance(words);
+        List<Map.Entry<String, PageJson>> resultPages = Ranker.calcRank(pagesRelevance);
 
         System.out.println(resultPages);
 
@@ -20,9 +20,12 @@ public class Server {
         org.json.JSONObject json = new org.json.JSONObject();
 
         JSONArray jsonArr = new JSONArray();
-        for (Map.Entry<String, Double> pg : resultPages) {
+        for (Map.Entry<String, PageJson> pg : resultPages) {
             org.json.JSONObject page = new org.json.JSONObject();
             page.put("url", pg.getKey());
+            page.put("title", pg.getValue().title);
+            page.put("paragraph", pg.getValue().paragraph);
+
             jsonArr.put(page);
         }
 

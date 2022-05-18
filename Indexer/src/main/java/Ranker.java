@@ -1,16 +1,10 @@
 import com.mongodb.client.MongoCollection;
-import jdk.jshell.execution.Util;
 import org.bson.Document;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.*;
-import java.util.jar.JarOutputStream;
 
 import static com.mongodb.client.model.Filters.eq;
-import static java.lang.Math.log10;
-import static java.util.Arrays.asList;
 
 public class Ranker {
     static int MAXITERATION = 1;
@@ -79,22 +73,24 @@ public class Ranker {
         Utility.dbDisconnect();
     }
 
-    public static HashMap<String, Double> calcRelevance(Vector<String> words) {
+    public static HashMap<String, PageJson> calcRelevance(Vector<String> words) {
 
         MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 
-        HashMap<String, Double> pagesRelevance = new HashMap<>();
+        HashMap<String, PageJson> pagesRelevance = new HashMap<>();
         for (String word : words) {
             Document doc = (Document) collection.find(eq("word", word)).first();
             ArrayList<Document> pages = (ArrayList<Document>) doc.get("pages");
             for (Document pg : pages) {
                 String url = pg.getString("url");
-                double score = pg.getDouble("score");
+                String title = pg.getString("title");
+                ArrayList<String> sentences = (ArrayList<String>) pg.get("sentences");
+                Double score = pg.getDouble("score");
 
                 if (pagesRelevance.containsKey(url)) {
-                    pagesRelevance.replace(url, pagesRelevance.get(url) + score);
+                    pagesRelevance.replace(url, new PageJson(url, title, String.join(" ", sentences), pagesRelevance.get(url).score + score));
                 } else {
-                    pagesRelevance.put(url, score);
+                    pagesRelevance.put(url, new PageJson(url, title, String.join(" ", sentences), score));
                 }
             }
         }
@@ -109,25 +105,25 @@ public class Ranker {
         return pagesRelevance;
     }
 
-    public static List<Map.Entry<String, Double>> calcRank(HashMap<String, Double> pagesRelevance) {
+    public static List<Map.Entry<String, PageJson>> calcRank(HashMap<String, PageJson> pagesRelevance) {
 
         MongoCollection collection = Utility.dbConnect(Utility.PAGES_COLLECTION);
 
-        for (Map.Entry<String, Double> entry : pagesRelevance.entrySet()) {
+        for (Map.Entry<String, PageJson> entry : pagesRelevance.entrySet()) {
 
             Document doc = (Document) collection.find(eq("url", entry.getKey())).first();
             double popularity = doc.getDouble("popularity");
-            entry.setValue(popularity * entry.getValue());
+            entry.setValue(new PageJson(entry.getValue().url, entry.getValue().title, entry.getValue().paragraph, popularity * entry.getValue().score));
         }
 
         Utility.dbDisconnect();
 
         // sort these pages and send a particular number of pages to the Frontend
 //        TreeMap<String, Double> treeMap = new TreeMap<>(Comparator.comparingDouble(pagesRelevance::get).reversed());
-        List<Map.Entry<String, Double>> pagesList = new LinkedList<>(pagesRelevance.entrySet());
+        List<Map.Entry<String, PageJson>> pagesList = new LinkedList<>(pagesRelevance.entrySet());
         Collections.sort(pagesList, new Comparator<>() {
-            public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
-                return o2.getValue().compareTo(o1.getValue());
+            public int compare(Map.Entry<String, PageJson> entry1, Map.Entry<String, PageJson> entry2) {
+                return (entry2.getValue().score).compareTo(entry1.getValue().score);
             }
         });
 
