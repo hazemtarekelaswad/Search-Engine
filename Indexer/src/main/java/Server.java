@@ -45,7 +45,9 @@ public class Server {
             String[] queries = query.split(" ");
             Vector<String> words = new Vector<>(Arrays.asList(queries));
 
+            // Processing
             org.json.JSONObject response = processSearchQueries(words);
+
             res.type("application/json");
             res.status(200);
             return response;

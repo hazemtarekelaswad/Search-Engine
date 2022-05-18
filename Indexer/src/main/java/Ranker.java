@@ -80,6 +80,12 @@ public class Ranker {
         HashMap<String, PageJson> pagesRelevance = new HashMap<>();
         for (String word : words) {
             Document doc = (Document) collection.find(eq("word", word)).first();
+
+            // To handle the unfound word
+            if (doc == null) {
+                System.err.println("<" + word + "> is not found");
+                continue;
+            }
             ArrayList<Document> pages = (ArrayList<Document>) doc.get("pages");
             for (Document pg : pages) {
                 String url = pg.getString("url");
@@ -88,7 +94,7 @@ public class Ranker {
                 Double score = pg.getDouble("score");
 
                 if (pagesRelevance.containsKey(url)) {
-                    pagesRelevance.replace(url, new PageJson(url, title, String.join(" ", sentences), pagesRelevance.get(url).score + score));
+                    pagesRelevance.replace(url, new PageJson(url, title, pagesRelevance.get(url).paragraph + " " + String.join(" ", sentences), pagesRelevance.get(url).score + score));
                 } else {
                     pagesRelevance.put(url, new PageJson(url, title, String.join(" ", sentences), score));
                 }
