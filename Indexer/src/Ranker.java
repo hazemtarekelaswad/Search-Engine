@@ -1,73 +1,83 @@
 import com.mongodb.client.MongoCollection;
+import jdk.jshell.execution.Util;
 import org.bson.Document;
 
+import java.io.IOException;
 import java.util.*;
 
 import static com.mongodb.client.model.Filters.eq;
+import static java.lang.Math.log10;
+import static java.util.Arrays.asList;
 
 public class Ranker {
+    static int MAXITERATION = 1;
 
-    private Vector<PageInfo> Pages = new Vector<PageInfo>();
-    static int NUMBER_OF_PAGES = 5000;
-    private long CurrentScore;
-    private long lastScore;
-    private Vector<String> links;
-    static int MAXITERATION = 4;
+    private Vector<PageInfo> pages;
+    private long numberOfPages;
 
-    public Ranker(PageInfo pages) {
-//        this.Pages = pages;
+    public Ranker(Vector<PageInfo> pgs, long pagesCount) throws IOException {
+        this.pages = pgs;
+        this.numberOfPages = pagesCount;
+
+        setPopularityRank();
     }
 
-    public long getCurrentScore() {
-        return this.CurrentScore;
+
+    private void SetPageRank() throws IOException {
+        double score;
+
+        for (int i = 0; i < this.numberOfPages; i++) {
+            score = 0.0;
+            for (int j = 0; j < this.numberOfPages; j++) {
+                if (!this.pages.get(i).getUrl().equals(this.pages.get(j).getUrl()) && this.pages.get(j).getLinks().contains(this.pages.get(i).getUrl())) {
+                    System.out.println("Matched: " + this.pages.get(i).getUrl());
+
+                    score += (this.pages.get(j).getPreviousPopularityScore() / this.pages.get(j).getLinks().size());
+
+
+                    System.err.println("Matched link | score: " + score);
+                } else {
+                    System.err.println("NOT Matched link | score: " + score);
+                }
+            }
+            this.pages.get(i).setCurrentPopularityScore(score);
+        }
+
+
+        for (int i = 0; i < this.numberOfPages; i++) {
+            this.pages.get(i).setPreviousPopularityScore(this.pages.get(i).getCurrentPopularityScore());
+        }
     }
 
-    public void setCurrentScore(long score) {
-        this.CurrentScore = score;
+    private void setPopularityRank() throws IOException {
+        double firstScore = 1.0 / this.numberOfPages;
+        for (int i = 0; i < this.numberOfPages; i++) {
+            this.pages.get(i).setPreviousPopularityScore(firstScore);
+            this.pages.get(i).setCurrentPopularityScore(firstScore);
+        }
+
+        for (int i = 0; i < MAXITERATION; i++) {
+            SetPageRank();
+        }
+
+        // Insert in the db
+
+        MongoCollection collection = Utility.dbConnect(Utility.PAGES_COLLECTION);
+        collection.drop();
+
+        for (PageInfo page : this.pages) {
+            Document document = new Document()
+                    .append("url", page.getUrl())
+                    .append("popularity", page.getCurrentPopularityScore());
+
+            collection.insertOne(document);
+        }
+
+        Utility.dbDisconnect();
     }
 
-    public long getlastScore() {
-        return this.lastScore;
-    }
+    private static HashMap<String, Double> calcRelevance(Vector<String> words) {
 
-    public void setlastScore(long score) {
-        this.lastScore = score;
-    }
-
-//    private void SetPageRank() {
-//        long score;
-//
-//        for (int i = 0; i < NUMBER_OF_PAGES; i++) {
-//            score = 0;
-//            for (int j = 0; j < NUMBER_OF_PAGES; j++) {
-//                if (Page[j].getLinks().contains(Page[i].getUrl())) {
-//                    score += (Page[j].getlastScore() / Page[j].getLinks().size())
-//
-//                }
-//            }
-//            Page[i].setCurrentScore(score);
-//        }
-//
-//
-//        for (int i = 0; i < NUMBER_OF_PAGES; i++) {
-//            Page[i].setlastScore(getCurrentScore());
-//        }
-//    }
-//
-//    public void setPopularityRank() {
-//        long firstScore = 1 / NUMBER_OF_PAGES;
-//        for (int i = 0; i < NUMBER_OF_PAGES; i++) {
-//            Page[i].setlastScore(firstScore);
-//            page[i].setCurrentScore(firstScore);
-//        }
-//
-//        for (int i = 0; i < MAXITERATION; i++) {
-//            SetPageRank();
-//        }
-//
-//    }
-
-    private HashMap<String, Double> calcRelevance(Vector<String> words) {
         MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 
         HashMap<String, Double> pagesRelevance = new HashMap<>();
@@ -89,15 +99,14 @@ public class Ranker {
 
         Utility.dbDisconnect();
 
-//        for (Map.Entry<String, Double> entry : pagesRelevance.entrySet()) {
-//            System.out.println(entry.getKey() + "\t" + entry.getValue());
-//        }
+        System.out.println("Relevances");
+        for (Map.Entry<String, Double> entry : pagesRelevance.entrySet()) {
+            System.out.println(entry.getKey() + "\t" + entry.getValue());
+        }
         return pagesRelevance;
-
-
     }
 
-    private void calcRank(HashMap<String, Double> pagesRelevance) {
+    private static void calcRank(HashMap<String, Double> pagesRelevance) {
 
         MongoCollection collection = Utility.dbConnect(Utility.PAGES_COLLECTION);
 
@@ -110,18 +119,31 @@ public class Ranker {
 
         Utility.dbDisconnect();
 
-        // TODO: sort these pages and send a particular number of pages to the Frontend
-        TreeMap<String, Double> treeMap = new TreeMap<>(Comparator.comparingDouble(pagesRelevance::get).reversed());
-        treeMap.putAll(pagesRelevance);
+        // sort these pages and send a particular number of pages to the Frontend
+//        TreeMap<String, Double> treeMap = new TreeMap<>(Comparator.comparingDouble(pagesRelevance::get).reversed());
+        List<Map.Entry<String, Double>> list = new LinkedList<Map.Entry<String, Double>>(pagesRelevance.entrySet());
+        Collections.sort(list, new Comparator<>() {
+            public int compare(Map.Entry<String, Double> o1, Map.Entry<String, Double> o2) {
+                return o2.getValue().compareTo(o1.getValue());
+            }
+        });
 
+
+        System.out.println("Total value");
+        for (Map.Entry<String, Double> entry : list) {
+            System.out.println(entry.getKey() + "\t" + entry.getValue());
+        }
 
         // TODO: send these urls to the frontend
 
     }
 
     public static void main(String[] args) {
-         // HashMap<String, Double> pagesRelevance = calcRelevance(/*words*/);
-        // calcRank(pagesRelevance)
+        Vector<String> words = new Vector<>();
+        words.add("limit");
+        words.add("tool");
+        HashMap<String, Double> pagesRelevance = calcRelevance(words);
+        calcRank(pagesRelevance);
     }
 
 }

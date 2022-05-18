@@ -20,10 +20,25 @@ public class PageInfo {
     private long rawWordsCount;
 
     private Vector<String> links;
-    private long previousPopularityScore;
-    private long currentPopularityScore;
-    private long IDF;
-    private long TF;
+    private double previousPopularityScore;
+    private double currentPopularityScore;
+
+    public double getPreviousPopularityScore() {
+        return previousPopularityScore;
+    }
+
+    public void setPreviousPopularityScore(double previousPopularityScore) {
+        this.previousPopularityScore = previousPopularityScore;
+    }
+
+    public double getCurrentPopularityScore() {
+        return currentPopularityScore;
+    }
+
+    public void setCurrentPopularityScore(double currentPopularityScore) {
+        this.currentPopularityScore = currentPopularityScore;
+    }
+
 
     public PageInfo(String url) throws IOException {
         this.url = url;
@@ -38,8 +53,9 @@ public class PageInfo {
 
         Elements linkElements = doc.select("a[href]");  // HTML links only or not with http or not
         for (Element element : linkElements) {
-            this.links.add(element.attr("href"));
+            this.links.add(element.absUrl("href"));
         }
+        System.out.println(this.links);
 
         this.title = doc.title();
         String body = doc.body().text();
@@ -87,16 +103,16 @@ public class PageInfo {
     }
 
     public Vector<String> getLinks() throws IOException {
-        this.links = new Vector<String>();
-
-        Document doc = Jsoup.connect(this.url).get();
-
-        Elements linkElements = doc.getElementsByTag("a");
-        for (Element el : linkElements) {
-            this.links.add(el.attr("href"));
-        }
-
-        System.out.println(this.links);
+//        this.links = new Vector<String>();
+//
+//        Document doc = Jsoup.connect(this.url).get();
+//
+//        Elements linkElements = doc.getElementsByTag("a");
+//        for (Element el : linkElements) {
+//            this.links.add(el.absUrl("href"));
+//        }
+//
+//        System.out.println(this.links);
 
         return this.links;
     }

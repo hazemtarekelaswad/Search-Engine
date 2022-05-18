@@ -27,9 +27,6 @@ public class Indexer {
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
-        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
-
-        collection.drop();
 
         Vector<PageInfo> pages = new Vector<PageInfo>();
         Vector<String> urls = Utility.readFile(Utility.URLS_FILE_PATH);
@@ -55,8 +52,11 @@ public class Indexer {
 
         // TODO: @ lucio
         // TODO: Send these pages to another class in constructor
-//        Ranker ranker = new Ranker(pages);
+        Ranker ranker = new Ranker(pages, pagesCount);
 
+
+        MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
+        collection.drop();
 
         // Insert every word in each page in the DB
         for (PageInfo page : pages) {
