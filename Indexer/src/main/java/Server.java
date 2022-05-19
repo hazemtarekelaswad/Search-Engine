@@ -2,15 +2,32 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
+import java.io.IOException;
 import java.util.*;
 
-import static spark.Spark.get;
-import static spark.Spark.port;
+import static spark.Spark.*;
 
 public class Server {
     private static final int PORT_NUMBER = 3000;
 
-    private static org.json.JSONObject processSearchQueries(Vector<String> words) {
+    private static org.json.JSONObject processSearchQueries(Vector<String> queries) throws IOException {
+
+        // Remove stop words and duplicated words
+        Vector<String> stopWords = Utility.readFile(Utility.STOP_WORDS_FILE_PATH);
+        HashSet<String> refinedWords = new HashSet<>();
+        for (String query : queries) {
+            if (!stopWords.contains(query.toLowerCase())) {
+                refinedWords.add(query.toLowerCase());
+            }
+        }
+
+        // Stem every word
+        Vector<String> words = new Vector<>();
+        for (String word : refinedWords) {
+            words.add(Utility.stemWord(word));
+        }
+
+        // Send these words to the ranker to calculate factors and return list of ranked pages
         HashMap<String, PageJson> pagesRelevance = Ranker.calcRelevance(words);
         List<Map.Entry<String, PageJson>> resultPages = Ranker.calcRank(pagesRelevance);
 
@@ -40,7 +57,7 @@ public class Server {
     public static void main(String[] args) {
         System.out.println("Server is running...");
         port(PORT_NUMBER);
-        get("/search", (req, res) -> {
+        post("/pages", (req, res) -> {
             JSONParser parser = new JSONParser();
             JSONObject request = (JSONObject) parser.parse(req.body());
             String query = (String) request.get("query");
