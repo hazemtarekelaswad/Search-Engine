@@ -1,10 +1,2 @@
 https://www.javatpoint.com
 https://www.arduino.cc/en/hardware
-https://www.geeksforgeeks.org/
-https://www.python.org/
-https://www.apple.com/
-https://docs.python.org/
-https://pypi.org/
-https://psfmember.org/civicrm/contribute/transact?id=2&reset=1
-https://www.facebook.com/pythonlang?fref=ts
-https://twitter.com/ThePSF

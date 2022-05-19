@@ -24,6 +24,7 @@ import static com.mongodb.client.model.Projections.*;
 
 public class Indexer {
     private static long pagesCount = 0;
+    private static boolean firstTime = true;    // false => for incoming pages
 
     public static void main(String[] args) throws IOException, InterruptedException {
 
@@ -50,6 +51,12 @@ public class Indexer {
         }
         for (Thread thread : threads) thread.join();
 
+        // if there is a new crawled page
+        if (!firstTime) {
+            processNewPage("https://www.javatpoint.com/aws-tutorial", pages);
+            return;
+        }
+
         new Ranker(pages, pagesCount);
 
 
@@ -69,10 +76,6 @@ public class Indexer {
 
         Utility.dbDisconnect();
 
-//        calcRank(calcRelevance());
-
-        // listen for any coming crawled url in order ot index it in the db
-//        processNewPage("https://en.wikipedia.org/wiki/Ice_hockey_in_Bosnia_and_Herzegovina");
 
     }
 
@@ -122,14 +125,14 @@ public class Indexer {
     private static void insertScores(MongoCollection collection) {
 
         List<Document> docs = (List<Document>) collection.find().into(new ArrayList<Document>());
-        for(Document doc : docs) {
+        for (Document doc : docs) {
             double idf = doc.getDouble("idf");
             ArrayList<Document> pages = (ArrayList<Document>) doc.get("pages");
-            for(Document pg : pages) {
+            for (Document pg : pages) {
                 double advTf = pg.getDouble("advTermFreq");
                 double score = advTf * idf;
 
-                Bson filter = Filters.eq( "_id", doc.get("_id"));
+                Bson filter = Filters.eq("_id", doc.get("_id"));
                 Bson pulling = Updates.pull("pages", new Document("url", pg.getString("url")));
                 collection.updateOne(filter, pulling);
 
@@ -150,16 +153,18 @@ public class Indexer {
     }
 
 
-    // Incremental Update: It must be possible to update an existing
-    // index with a set of newly crawled HTML documents
-    // TODO;
-    public static void processNewPage(String url) throws IOException {
+    public static void processNewPage(String url, Vector<PageInfo> pages) throws IOException {
         MongoCollection collection = Utility.dbConnect(Utility.WORDS_COLLECTION);
 
-        // TODO: you should update every word's idf in the db because pagesCount has changed due to new crawled pages
-//        if (/* newPageCrawled */) {
+        // update every word's idf in the db because pagesCount has changed due to new crawled pages
         PageInfo newPage = new PageInfo(url);
+        ++pagesCount;
 
+        // Drop and recreate pages' popularity
+        pages.add(newPage);
+        new Ranker(pages, pagesCount);
+
+        // Insert the new page to the db
         for (WordInfo word : newPage.getWords()) {
             System.out.println(word.getName());
             dbInsert(collection, word, newPage);
@@ -167,7 +172,6 @@ public class Indexer {
         System.err.println("Number of words: " + newPage.getWords().size());
 
         // Update every word's IDF
-        ++pagesCount;
         MongoCursor<Document> docCursor = collection.find().cursor();
 
         try {
@@ -181,17 +185,8 @@ public class Indexer {
             docCursor.close();
         }
 
-
-        // TODO: or update nothing in case of existing crawled page changes
-//        } else if ( /* anExistingCrawledPageChanges */ ) {
-//            PageInfo newPage = new PageInfo(url);
-//
-//            for (WordInfo word : newPage.getWords()) {
-//                System.out.println(word.getName());
-//                dbInsert(collection, word, newPage);
-//            }
-//            System.err.println("Number of words: " + newPage.getWords().size());
-//        }
+        // Then update the score of each page using the new idf
+        insertScores(collection);
 
         Utility.dbDisconnect();
 

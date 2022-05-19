@@ -49,7 +49,7 @@ public class PageInfo {
 
         Document doc = Jsoup.connect(url).get();
 
-        /// TODO: get all links and fill links vector with
+        /// get all links and fill links vector with
 
         Elements linkElements = doc.select("a[href]");  // HTML links only or not with http or not
         for (Element element : linkElements) {
@@ -69,6 +69,8 @@ public class PageInfo {
                 refinedWords.add(word.toLowerCase());
             }
         }
+
+        if (refinedWords.contains("")) refinedWords.remove("");
 
         for (String word : refinedWords) {
             if (word.isEmpty() || word.contains("'") || word.contains("\"") || word.contains("\\") || word.contains("(") || word.contains(")") || word.contains("[") || word.contains("]") || word.contains("{") || word.contains("}") || word.contains("*")) {
