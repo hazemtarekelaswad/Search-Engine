@@ -7,6 +7,30 @@ A crawler-based search engine, consists of six main components that are crawler,
 - MongoDB
 - Flutter
 
+## Main Structure
+
+```
+Search-Engine   
+│
+└───apt_project
+│   
+└───Crawler
+|   │   WebCrawler.java
+|   │   Crawler_Main.java
+|   |   seedlist.txt
+|   └── output.txt
+│   
+└───Backend
+    └──  src/main/java
+         |   Indexer.java
+         |   Ranker.java
+         |   Server.java
+         |   PageInfo.java
+         |   PageJson.java
+         |   WordInfo.java
+         └── Utility.java
+```
+
 ## Setup
 Firstly, clone this repository
 ```sh
