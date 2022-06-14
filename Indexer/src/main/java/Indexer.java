@@ -1,30 +1,23 @@
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
-import jdk.jshell.execution.Util;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
 
-import javax.print.Doc;
 import java.io.IOException;
 import java.util.*;
 
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
 import static java.lang.Math.log10;
 import static java.util.Arrays.asList;
-import static com.mongodb.client.model.Projections.*;
 
 
 public class Indexer {
     private static long pagesCount = 0;
-    private static boolean firstTime = true;    // false => for incoming pages
+    private static boolean firstTime = false;    // false => for incoming pages
 
     public static void main(String[] args) throws IOException, InterruptedException {
 

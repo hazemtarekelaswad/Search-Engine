@@ -7,14 +7,7 @@ import com.mongodb.client.MongoDatabase;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
-import org.apache.lucene.analysis.pl.PolishAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.apache.lucene.analysis.stempel.*;
-
 
 
 import java.io.File;
@@ -78,9 +71,4 @@ public class Utility {
         return stemmedWord;
     }
 
-
-
-    public static void main(String[] args) throws IOException {
-        // You can test any utility function here.
-    }
 }
