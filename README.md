@@ -48,3 +48,5 @@ Then run
 ```sh
 flutter run lib/main.dart
 ```
+
+>*Please, check out the collaborators and contributers sections to get to know these awesome people who helped developing this project. 💪🏽👏🏾*
