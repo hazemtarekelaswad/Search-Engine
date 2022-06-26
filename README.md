@@ -42,24 +42,24 @@ Then, build the project using Maven
 mvn clean install
 ```
 and you will see `./target` be added to the project main directory
-> *If you don't have Maven installed in your machnie, click [here](https://maven.apache.org/install.html) and follow the steps.*
+> *If you don't have Maven installed in your machine, click [here](https://maven.apache.org/install.html) and follow the steps.*
 
 At this point, you have four main components to run
 
 
-**Crawler**
+1. **Crawler**
 ```sh
 java -cp target/SearchEngine-1.0.jar Crawler
 ```
-**Indexer**
+2. **Indexer**
 ```sh
 java -cp target/SearchEngine-1.0.jar Indexer
 ```
-**Server**
+3. **Server**
 ```sh
 java -cp target/SearchEngine-1.0.jar Server
 ```
-**Android Application**
+4. **Android Application**
 
 Build
 ```sh
